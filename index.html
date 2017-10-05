@@ -9,6 +9,102 @@
   <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+  body {
+  font-family: Roboto;
+}
+
+
+/*Search*/
+
+#search_artist {
+  padding: 20px;
+}
+
+#search_artist .wrapper {
+  margin: 0 auto;
+}
+
+#search_artist .wrapper h1 {
+  font-weight: 300;
+  font-size: 40px;
+  text-align: center;
+  padding: 30px 0;
+  color: #00BCD4;
+  font-family: "Pacifico", cursive;
+}
+
+input {
+  width: 100%;
+  border-radius: 50px;
+  -widbit-appearance: none;
+  border: 1px solid #d6d6d6;
+  padding: 10px 30px;
+  font-size: 21px;
+  font-weight: 300;
+  font-family: Roboto;
+}
+
+input: focus {
+  outline: none;
+}
+
+::-webkit-input-placeholder {
+  color: #b8b8b8;
+  font-family: Roboto;
+  text-align: center;
+}
+
+/*Albums*/
+
+#album_list_container {
+  margin-top: 50px;
+}
+
+#album_list_container .album_item {
+  padding: 20px 0;
+  background: #f7f7f7;
+  border-top: 1px solid #dedede;
+  text-align: center;
+}
+
+#album_list_container .album_item .item_thmb{
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  background-size: cover !important;
+  background-repeat: no-repeat;
+}
+
+#album_list_container .album_item  .item_title {
+  font-size: 20px;
+  padding: 20px 0 10px;
+  text-align: center;
+}
+
+#album_list_container .album_item .item_price {
+  text-align: center;
+  color: #009688;
+  font-size: 14px;
+}
+
+#album_list_container .album_item a {
+  background: #f196f3;
+  color: #fff;
+  padding: 5px 10px;
+  font-size: 12px;
+  display: inline-block;
+  border-radius: 50px;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+#not_match {
+  display: none;
+  text-align: center;
+}
+
+  </style>
 </head>
 <body>
   <div class="container">
@@ -30,5 +126,74 @@
 
 
 <script src="js/main.js" charset="utf-8"></script>
+<script>
+  (function musicDB(){
+  this.init = function(){
+    this.search();
+  };
+
+  this.search = function(){
+    var form = document.querySelector("#form");
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      var value = document.querySelector("#input_search").value;
+      form.reset();
+
+      getData(value.split(' ').join("+"));
+
+    });
+  };
+
+  this.getData = function(artist){
+    var http = new XMLHttpRequest();
+    var url = "https://itunes.apple.com/search?term="+artist+"&enitiy=album";
+    var method = "GET";
+
+    var container = document.querySelector("#album_list_container");
+    container.innerHTML = "";
+
+    http.open(method, url);
+    http.onreadystatechange = function(){
+      if(http.readyState === XMLHttpRequest.DONE && http.status === 200){
+          showArtist(JSON.parse(http.response));
+      }else if(http.readyState === XMLHttpRequest && http.status !== 200) {
+
+      }
+    };
+    http.send();
+  };
+
+  this.showArtist = function(obj){
+    var container = document.querySelector("#album_list_container");
+    var template = '';
+   if (obj.results.length > 0) {
+     document.querySelector("#not_match").style.display = "none";
+     for (var i = 0; i < obj.results.length; i++) {
+       console.log(obj.results[i]);
+       template += `
+         <div class="col-sm-3 album_item">
+           <div class="item_thmb" style="background: url(${obj.results[i].artworkUrl100})"></div>
+           <div class="item_title">${obj.results[i].collectionName}</div>
+           <div class="item_price">
+             <span>Price:</span> ${obj.results[i].collectionPrice}
+           </div>
+           <a href="${obj.results[i].collectionViewUrl}" target="_blank"> Buy Now </a>
+         </div>
+       `;
+     }
+      container.innerHTML = template;
+   }else {
+     document.querySelector("#not_match").style.display = "block";
+   }
+
+  };
+
+
+
+  this.init();
+})();
+
+</script>
 </body>
 </html>
